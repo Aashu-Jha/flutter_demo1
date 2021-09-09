@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Expanded(
-            //To avoid orientation error, we are using singleChildScrollView
+              //To avoid orientation error, we are using singleChildScrollView
               child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.all(10.0),
@@ -70,25 +70,32 @@ class _HomeScreenState extends State<HomeScreen> {
       showSnackBar(ctx, 'Please select image first');
       return;
     }
+    
+    try {
+      final postUri = Uri.parse('https://codelime.in/api/remind-app-token');
+      final request = new http.MultipartRequest("POST", postUri);
 
-    final postUri = Uri.parse('https://codelime.in/api/remind-app-token');
-    final request = new http.MultipartRequest("POST", postUri);
+      request.fields['image'] = 'example';
+      request.files.add(
+        new http.MultipartFile.fromBytes(
+          'file',
+          await image.readAsBytes(),
+          contentType: new MediaType('image', 'jpeg'),
+        ),
+      );
 
-    request.fields['image'] = 'example';
-    request.files.add(
-      new http.MultipartFile.fromBytes(
-        'file',
-        await image.readAsBytes(),
-        contentType: new MediaType('image', 'jpeg'),
-      ),
-    );
-
-    request.send().then((response) {
-      if (response.statusCode == 200) {
-        showSnackBar(ctx, 'File successfully uploaded!');
-      }
-      ;
-    });
+      request.send().then((response) {
+        if (response.statusCode == 200) {
+          showSnackBar(ctx, 'File successfully uploaded!');
+        }else{
+          showSnackBar(ctx, 'Something went wrong! Try again later');
+        }
+        ;
+      });
+    }
+    catch (e) {
+      showSnackBar(ctx, e.toString());
+    }
   }
 
   Future<void> _pickImageFromGallery() async {
